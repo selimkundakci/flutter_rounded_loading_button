@@ -100,6 +100,13 @@ class RoundedLoadingButtonState extends State<RoundedLoadingButton>
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _buttonController.dispose();
+    _checkButtonControler.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
 
