@@ -8,6 +8,8 @@ class RoundedLoadingButton extends StatefulWidget {
   final Widget child;
   final Color color;
   final double height;
+  final double width;
+  final ShapeBorder shape;
 
   RoundedLoadingButton({
     Key key,
@@ -16,7 +18,9 @@ class RoundedLoadingButton extends StatefulWidget {
     this.child,
     this.color = Colors.blue,
     this.height = 50,
-  });
+    this.width = 300,
+    this.shape,
+  }) : assert(width > 150);
 
   @override
   State<StatefulWidget> createState() => RoundedLoadingButtonState();
@@ -25,13 +29,13 @@ class RoundedLoadingButton extends StatefulWidget {
 class RoundedLoadingButtonState extends State<RoundedLoadingButton>
     with TickerProviderStateMixin {
   AnimationController _buttonController;
-  AnimationController _checkButtonControler;
+  AnimationController _checkButtonController;
 
   Animation _squeezeAnimation;
   Animation _bounceAnimation;
 
   bool _isSuccessful = false;
-  bool _isErrored = false;
+  bool _isError = false;
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +43,9 @@ class RoundedLoadingButtonState extends State<RoundedLoadingButton>
       alignment: FractionalOffset.center,
       decoration: new BoxDecoration(
         color: widget.color,
-        borderRadius:
-            new BorderRadius.all(Radius.circular(_bounceAnimation.value / 2)),
+        borderRadius: new BorderRadius.all(
+          Radius.circular(_bounceAnimation.value / 2),
+        ),
       ),
       width: _bounceAnimation.value,
       height: _bounceAnimation.value,
@@ -56,8 +61,9 @@ class RoundedLoadingButtonState extends State<RoundedLoadingButton>
       alignment: FractionalOffset.center,
       decoration: new BoxDecoration(
         color: Colors.red,
-        borderRadius:
-            new BorderRadius.all(Radius.circular(_bounceAnimation.value / 2)),
+        borderRadius: new BorderRadius.all(
+          Radius.circular(_bounceAnimation.value / 2),
+        ),
       ),
       width: _bounceAnimation.value,
       height: _bounceAnimation.value,
@@ -79,9 +85,10 @@ class RoundedLoadingButtonState extends State<RoundedLoadingButton>
     );
 
     var _btn = ButtonTheme(
-      shape: RoundedRectangleBorder(
-        borderRadius: new BorderRadius.circular(35),
-      ),
+      shape: widget.shape ??
+          RoundedRectangleBorder(
+            borderRadius: new BorderRadius.circular(35),
+          ),
       minWidth: _squeezeAnimation.value,
       height: widget.height,
       child: RaisedButton(
@@ -95,14 +102,14 @@ class RoundedLoadingButtonState extends State<RoundedLoadingButton>
 
     return Container(
       height: widget.height,
-      child: Center(child: _isErrored ? _cross : _isSuccessful ? _check : _btn),
+      child: Center(child: _isError ? _cross : _isSuccessful ? _check : _btn),
     );
   }
 
   @override
   void dispose() {
     _buttonController.dispose();
-    _checkButtonControler.dispose();
+    _checkButtonController.dispose();
     super.dispose();
   }
 
@@ -115,14 +122,14 @@ class RoundedLoadingButtonState extends State<RoundedLoadingButton>
       vsync: this,
     );
 
-    _checkButtonControler = new AnimationController(
+    _checkButtonController = new AnimationController(
       duration: new Duration(milliseconds: 1000),
       vsync: this,
     );
 
     _bounceAnimation = Tween<double>(begin: 0, end: widget.height).animate(
       new CurvedAnimation(
-        parent: _checkButtonControler,
+        parent: _checkButtonController,
         curve: Curves.elasticOut,
       ),
     );
@@ -131,7 +138,8 @@ class RoundedLoadingButtonState extends State<RoundedLoadingButton>
       setState(() {});
     });
 
-    _squeezeAnimation = Tween<double>(begin: 300, end: widget.height).animate(
+    _squeezeAnimation =
+        Tween<double>(begin: widget.width, end: widget.height).animate(
       new CurvedAnimation(
         parent: _buttonController,
         curve: Curves.easeInOutCirc,
@@ -156,25 +164,26 @@ class RoundedLoadingButtonState extends State<RoundedLoadingButton>
 
   _stop() {
     _isSuccessful = false;
-    _isErrored = false;
+    _isError = false;
     _buttonController.reverse();
   }
 
   _success() {
     _isSuccessful = true;
-    _isErrored = false;
-    _checkButtonControler.forward();
+    _isError = false;
+    _checkButtonController.forward();
   }
 
   _error() {
-    _isErrored = true;
-    _checkButtonControler.forward();
+    _isSuccessful = false;
+    _isError = true;
+    _checkButtonController.forward();
   }
 
   _reset() {
     _isSuccessful = false;
-    _isErrored = false;
-    _buttonController.reverse();
+    _isError = false;
+    _buttonController.reset();
   }
 }
 
